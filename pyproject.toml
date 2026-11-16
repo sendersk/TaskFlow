@@ -25,7 +25,11 @@ packages = ["src/taskflow"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-addopts = "-ra"
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+]
 
 [tool.ruff]
 line-length = 88
@@ -39,3 +43,7 @@ select = ["E", "F", "I", "B", "UP"]
 python_version = "3.13"
 mypy_path = "src"
 strict = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = true

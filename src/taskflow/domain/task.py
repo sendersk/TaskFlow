@@ -83,3 +83,33 @@ class Task:
             self.due_date = due_date
 
         self.updated_at = datetime.now(UTC)
+
+    def change_status(self, status: TaskStatus) -> None:
+        """Change the task status if the transition is allowed."""
+        allowed_transitions = {
+            TaskStatus.TODO: {
+                TaskStatus.IN_PROGRESS,
+                TaskStatus.BLOCKED,
+            },
+            TaskStatus.IN_PROGRESS: {
+                TaskStatus.TODO,
+                TaskStatus.BLOCKED,
+                TaskStatus.COMPLETED,
+            },
+            TaskStatus.BLOCKED: {
+                TaskStatus.TODO,
+                TaskStatus.IN_PROGRESS,
+            },
+            TaskStatus.COMPLETED: {
+                TaskStatus.IN_PROGRESS,
+            },
+        }
+
+        if status not in allowed_transitions[self.status]:
+            raise ValueError(
+                f"Cannot change task status from "
+                f"'{self.status}' to '{status}'."
+            )
+
+        self.status = status
+        self.updated_at = datetime.now(UTC)

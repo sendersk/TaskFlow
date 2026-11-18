@@ -59,3 +59,25 @@ class Project:
 
         self.updated_at = datetime.now(UTC)
 
+    def change_status(self, status: ProjectStatus) -> None:
+        """Change the project status if the transition is allowed."""
+        allowed_transitions = {
+            ProjectStatus.ACTIVE: {
+                ProjectStatus.COMPLETED,
+                ProjectStatus.ARCHIVED,
+            },
+            ProjectStatus.COMPLETED: {
+                ProjectStatus.ACTIVE,
+                ProjectStatus.ARCHIVED,
+            },
+            ProjectStatus.ARCHIVED: set(),
+        }
+
+        if status not in allowed_transitions[self.status]:
+            raise ValueError(
+                f"Cannot change project status from "
+                f"'{self.status}' to '{status}'."
+            )
+
+        self.status = status
+        self.updated_at = datetime.now(UTC)

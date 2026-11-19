@@ -32,7 +32,7 @@ def test_create_database_engine_uses_configured_settings(
 def test_base_has_metadata() -> None:
     """Expose SQLAlchemy metadata through the declarative base."""
     assert Base.metadata is not None
-    assert Base.metadata.tables == {}
+    assert set(Base.metadata.tables.keys()) == {"projects", "tasks"}
 
 
 def test_get_session_closes_session_after_use(monkeypatch) -> None:

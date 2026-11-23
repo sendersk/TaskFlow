@@ -6,6 +6,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from taskflow.domain.task import TaskPriority, TaskStatus
 from taskflow.models.task import TaskModel
 
 
@@ -23,11 +24,41 @@ class TaskRepository:
 
     def get_by_project_id(self, project_id: UUID) -> list[TaskModel]:
         """Return all tasks belonging to a project."""
-        statement = (
-            select(TaskModel)
-            .where(TaskModel.project_id == project_id)
-            .order_by(TaskModel.created_at.desc())
+        return self.list_by_project(
+            project_id=project_id,
+            limit=100,
+            offset=0,
         )
+
+    def list_by_project(
+        self,
+        project_id: UUID,
+        status: TaskStatus | None = None,
+        priority: TaskPriority | None = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> list[TaskModel]:
+        """Return filtered and paginated tasks for a project."""
+        statement = select(TaskModel).where(
+            TaskModel.project_id == project_id
+        )
+
+        if status is not None:
+            statement = statement.where(TaskModel.status == status)
+
+        if priority is not None:
+            statement = statement.where(TaskModel.priority == priority)
+
+        statement = (
+            statement
+            .order_by(
+                TaskModel.created_at.desc(),
+                TaskModel.id.asc(),
+            )
+            .limit(limit)
+            .offset(offset)
+        )
+
         return list(self._session.scalars(statement).all())
 
     def create(self, task: TaskModel) -> TaskModel:

@@ -1,6 +1,7 @@
 
 """Application service for project operations."""
 
+from datetime import UTC
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -22,17 +23,30 @@ class ProjectService:
         self._session = session
         self._repository = ProjectRepository(session)
 
+
     @staticmethod
     def _to_domain(model: ProjectModel) -> Project:
         """Convert a database model into a domain project."""
+        created_at = model.created_at
+        updated_at = model.updated_at
+
+        # SQLite does not preserve timezone information in DateTime columns.
+        # Database timestamps are stored in UTC, so restore the UTC timezone.
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=UTC)
+
+        if updated_at.tzinfo is None:
+            updated_at = updated_at.replace(tzinfo=UTC)
+
         return Project(
             id=model.id,
             name=model.name,
             description=model.description,
             status=model.status,
-            created_at=model.created_at,
-            updated_at=model.updated_at,
+            created_at=created_at,
+            updated_at=updated_at,
         )
+
 
     @staticmethod
     def _to_model(project: Project) -> ProjectModel:
